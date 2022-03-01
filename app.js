@@ -2,52 +2,62 @@ let c = document.querySelector('canvas'),
   $ = c.getContext('2d'),
   w = (c.width = innerWidth),
   h = (c.height = innerHeight),
-  random = Math.random
+  r = Math.random,
+  cos = Math.cos,
+  sin=Math.sin,
+  pi=Math.PI,
+  p=pi*2,
+  time = 0,
+  e = [],
+  traceCount = 50,
+  pointsOrigin = [],
+  dr = 0.1,
+  i,
+  config = {
+    traceK: 0.4,
+    timeDelta: 0.01
+  }
 
 $.fillStyle = 'black'
 $.fillRect(0, 0, w, h)
 
-let heartPos = function (rad) {
-  return [
-    Math.pow(Math.sin(rad), 3),
+const heartPos = rad => 
+   [
+    Math.pow(sin(rad), 3),
     -(
-      15 * Math.cos(rad) -
-      5 * Math.cos(2 * rad) -
-      2 * Math.cos(3 * rad) -
-      Math.cos(4 * rad)
+      15 * cos(rad) -
+      5 * cos(2 * rad) -
+      2 * cos(3 * rad) -
+      cos(4 * rad)
     )
   ]
-}
 
-let scaleAndTranslate = function (pos, sx, sy, dx, dy) {
-  return [dx + pos[0] * sx, dy + pos[1] * sy]
-}
 
-window.addEventListener('resize', function () {
-  w = c.width = innerWidth
-  h = c.height = innerHeight
-  $.fillStyle = 'black'
-  $.fillRect(0, 0, w, h)
-})
+const scaleAndTranslate = (pos, sx, sy, dx, dy)=> 
+  [dx + pos[0] * sx, dy + pos[1] * sy]
 
-let traceCount = 50,
-  pointsOrigin = [],
-  dr = 0.1,
-  i
 
-for (i = 0; i < Math.PI * 2; i += dr)
+
+
+
+// const pointPosition=(a,b)=>{
+//   for (let i = 0; i < p; i += dr)
+//   pointsOrigin.push(scaleAndTranslate(heartPos(i), a, b, 0, 0))
+// }
+// pointPosition=(210,13)
+for (i = 0; i < p; i += dr)
   pointsOrigin.push(scaleAndTranslate(heartPos(i), 210, 13, 0, 0))
 
-for (i = 0; i < Math.PI * 2; i += dr)
+for (i = 0; i < p; i += dr)
   pointsOrigin.push(scaleAndTranslate(heartPos(i), 150, 9, 0, 0))
 
-for (i = 0; i < Math.PI * 2; i += dr)
+for (i = 0; i < p; i += dr)
   pointsOrigin.push(scaleAndTranslate(heartPos(i), 90, 5, 0, 0))
 
 let heartPointsCount = pointsOrigin.length,
   targetPoints = []
 
-let pulse = function (kx, ky) {
+const pulse = (kx, ky)=>{
   for (i = 0; i < pointsOrigin.length; i++) {
     targetPoints[i] = []
     targetPoints[i][0] = kx * pointsOrigin[i][0] + w / 2
@@ -55,24 +65,24 @@ let pulse = function (kx, ky) {
   }
 }
 
-let e = []
+
 for (i = 0; i < heartPointsCount; i++) {
-  let x = random() * w
-  let y = random() * h
+  let x = r() * w
+  let y = r() * h
 
   e[i] = {
     vx: 0,
     vy: 0,
     R: 2,
-    speed: random() + 5,
-    q: ~~(random() * heartPointsCount),
+    speed: r() + 5,
+    q: ~~(r() * heartPointsCount),
     D: 2 * (i % 2) - 1,
-    force: 0.2 * random() + 0.7,
+    force: 0.2 * r() + 0.7,
     f:
       'hsla(0,' +
-      ~~(40 * random() + 60) +
+      ~~(40 * r() + 60) +
       '%,' +
-      ~~(60 * random() + 20) +
+      ~~(60 * r() + 20) +
       '%,.3)',
     trace: []
   }
@@ -84,18 +94,15 @@ for (i = 0; i < heartPointsCount; i++) {
     }
 }
 
-let config = {
-  traceK: 0.4,
-  timeDelta: 0.01
-}
 
-let time = 0
-let loop = function () {
-  let n = -Math.cos(time)
+
+
+const loop = () => {
+  let n = -cos(time)
 
   pulse((1 + n) * 0.5, (1 + n) * 0.5)
 
-  time += (Math.sin(time) < 0 ? 9 : n > 0.8 ? 0.2 : 1) * config.timeDelta
+  time += (sin(time) < 0 ? 9 : n > 0.8 ? 0.2 : 1) * config.timeDelta
 
   $.fillStyle = 'rgba(0,0,0,.1)'
   $.fillRect(0, 0, w, h)
@@ -108,10 +115,10 @@ let loop = function () {
       length = Math.sqrt(dx * dx + dy * dy)
 
     if (10 > length) {
-      if (0.95 < random()) {
-        u.q = ~~(random() * heartPointsCount)
+      if (0.95 < r()) {
+        u.q = ~~(r() * heartPointsCount)
       } else {
-        if (0.99 < random()) {
+        if (0.99 < r()) {
           u.D *= -1
         }
 
@@ -148,5 +155,12 @@ let loop = function () {
 
   requestAnimationFrame(loop, c)
 }
+
+window.addEventListener('resize',  ()=> {
+  w = c.width = innerWidth
+  h = c.height = innerHeight
+  $.fillStyle = 'black'
+  $.fillRect(0, 0, w, h)
+})
 
 loop()
